@@ -25,8 +25,6 @@ pub type Result<T> = std::result::Result<T, SlimError>;
 #[cfg(test)]
 mod serialization_tests {
     use super::*;
-    use serialization::serialize::Serialize;
-    use serialization::deserialize::Deserialize;
     #[test]
     fn serdeser_u64() {
         use std::io::Cursor;
@@ -70,7 +68,8 @@ mod serialization_tests {
         let a: String = "1234567".to_string();
         {
             let b = a.clone();
-            Ok(b).encode_stream(&mut buff).unwrap();
+            let v_enc: Result<String> = Ok(b);
+            v_enc.encode_stream(&mut buff).unwrap();
         }
         buff.set_position(0);
         let x: Result<Result<String>> = Result::<String>::decode_stream(&mut buff);
@@ -89,8 +88,9 @@ mod serialization_tests {
         r.encode_stream(&mut buff).unwrap();
         buff.set_position(0);
         let x: Result<Result<String>> = Result::<String>::decode_stream(&mut buff);
+        println!("{:?}", x);
         match x {
-            Ok(Err(SlimError::SerializationError)) => (),
+            Ok(Err(SlimError::DeserializationError)) => (),
             _ => panic!("Failed to deserialize Err(SerializationError) properly"),
         }
     }
